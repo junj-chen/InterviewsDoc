@@ -110,15 +110,9 @@ B树，所有节点上都存储数据和索引，且在叶子节点没有维护�
 
  2. 应尽量**避免在 where 子句中对字段进行 null 值判断**，否则将导致引擎放弃使用索引而进行全表扫描
 
-    最好不要给数据库留NULL，尽可能的使用 NOT NULL填充数据库.
+ 3. 应尽量**避免在 where 子句中使用 != 或 <> 操作符**，否则将引擎放弃使用索引而进行全表扫描。
 
-    备注、描述、评论之类的可以设置为 NULL，其他的，最好不要使用NULL。
-
-    不要以为 NULL 不需要空间，比如：char(100) 型，在字段建立时，空间就固定了， 不管是否插入值（NULL也包含在内），都是占用 100个字符的空间的，如果是varchar这样的变长字段， null 不占用空间。
-
-	3. 应尽量**避免在 where 子句中使用 != 或 <> 操作符**，否则将引擎放弃使用索引而进行全表扫描。
-
-	4. 应尽量**避免在 where 子句中使用 or 来连接条件**，如果一个字段有索引，一个字段没有索引，将导致引擎放弃使用索引而进行全表扫描
+ 4. 应尽量**避免在 where 子句中使用 or 来连接条件**，如果一个字段有索引，一个字段没有索引，将导致引擎放弃使用索引而进行全表扫描
 
     ~~~sql
     select id from t where num=10 or Name = 'admin'  -- 该SQL 导致放弃建立的索引
@@ -161,15 +155,35 @@ B树，所有节点上都存储数据和索引，且在叶子节点没有维护�
    select id from t where createdate >= '2005-11-30' and createdate < '2005-12-1'
    ~~~
 
+ 8. 在索引列上进行数据类型的隐形转换也会导致索引失效，比如字符串类型一定要加上 引号
+
+
+
+##### 9. 前缀索引
+
+前缀索引是对文本或者字符串的前几个字符串建立索引，这样索引的长度更短，查询快
+
+建立语法：
+
+~~~sql
+Alter Table table_name Add KEY(Column_name(Prefix_length));
+~~~
+
+其中 prefix_length 长度需要计算：
+
+1. 首先计算索引列对于全列的区分度
+
+   ~~~SQL 
+   select count(Distinct column_name) / count(*) from table_name;
+   ~~~
+
+2. 再计算前缀长度取多少与 全列计算的区分度相等即可
+
+   ~~~SQL
+   select count(Distinct left(column_name, prefix_length)) / count(*) from table_name
+   ~~~
+
    
-
-
-
-
-
-
-
-
 
 
 
