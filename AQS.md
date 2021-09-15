@@ -31,7 +31,6 @@ AQS 结构图;
 
 ~~~java
 static final class Node {
-    
 
     /** waitStatus value to indicate thread has cancelled */
     static final int CANCELLED =  1;
